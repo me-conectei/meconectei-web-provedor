@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "ieaqui"
+  },
+  "targets": {
+    "ieaqui": {
+      "hosting": {
+        "ieaqui-provedor": [
+          "ieaqui-provedor"
+        ]
+      }
+    }
+  },
+  "storage":{
+    "rules": "storage.rules"
+  }
+}
