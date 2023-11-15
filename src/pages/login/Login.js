@@ -33,8 +33,8 @@ function Login(props) {
   const [error, setError] = useState(null);
   const [activeTabId] = useState(0);
   const [nameValue, setNameValue] = useState("");
-  const [loginValue, setLoginValue] = useState("admin@ieaqui.com.br");
-  const [passwordValue, setPasswordValue] = useState("123456");
+  const [loginValue, setLoginValue] = useState("tetemol604@jooffy.com");
+  const [passwordValue, setPasswordValue] = useState("12345678");
 
   return (
     <Grid container className={classes.container}>
