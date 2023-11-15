@@ -6,6 +6,7 @@ import {
   Marker,
 } from "@react-google-maps/api";
 import axios from "axios";
+import { baseURL } from "api";
 
 const BasicMap = ({ city, coords, setCoords, position, setPosition }) => {
   // eslint-disable-next-line
@@ -40,7 +41,7 @@ const BasicMap = ({ city, coords, setCoords, position, setPosition }) => {
 
   const cityValue = encodeURI(city);
 
-  const url = `https://api-ieaqui.avamobile.com.br/company/proxy?query=${cityValue}`;
+  const url = `${baseURL}/proxy?query=${cityValue}`;
 
   useEffect(() => {
     axios

@@ -6,6 +6,7 @@ import {
   Polygon,
 } from "@react-google-maps/api";
 import axios from "axios";
+import { baseURL } from "api";
 
 export const BasicMap = ({
   city,
@@ -38,7 +39,7 @@ export const BasicMap = ({
 
   const cityValue = encodeURI(city);
 
-  const url = `https://api-ieaqui.avamobile.com.br/company/proxy?query=${cityValue}`;
+  const url = `${baseURL}/proxy?query=${cityValue}`;
 
   useEffect(() => {
     axios

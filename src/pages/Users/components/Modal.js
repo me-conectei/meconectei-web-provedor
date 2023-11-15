@@ -21,6 +21,7 @@ import {
   TextField,
   Checkbox,
 } from "@material-ui/core";
+import { baseURL } from "api";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -107,7 +108,7 @@ export default function ModalDialog() {
             occupationArea: checkedOptions(occupationArea),
           };  
           axios.post(
-            `https://api-ieaqui.avamobile.com.br/company/users/`,
+            `${baseURL}/users/`,
             body,{
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("sessionToken")}`

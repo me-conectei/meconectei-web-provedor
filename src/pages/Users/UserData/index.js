@@ -30,6 +30,7 @@ import { useUserContext } from "pages/Users/context";
 
 import toast from "utils/toast";
 import axios from "axios";
+import { baseURL } from "api";
 
 const useStyles = makeStyles((theme) => ({
   divider: theme.divider,
@@ -139,7 +140,7 @@ export default function Users() {
     };
 
     axios.put(
-      `https://api-ieaqui.avamobile.com.br/company/users/${uidUser}`,
+      `${baseURL}/users/${uidUser}`,
       body,{
         headers: {
           Authorization: `Bearer ${localStorage.getItem("sessionToken")}`

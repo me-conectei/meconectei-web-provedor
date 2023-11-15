@@ -28,6 +28,7 @@ import {
 } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 import masks from '.././../../utils/masks'
+import { baseURL } from "api";
 const styled = {
   //position: "absolute",
 
@@ -229,7 +230,7 @@ export default function AddPlans({
 
   const addNewPlan = () => {
     createCommandService({
-      url: "https://api-ieaqui.avamobile.com.br/company/plans/add",
+      url: `${baseURL}/plans/add`,
       method: APIMethods.POST,
       payload: {
         name: planName,
