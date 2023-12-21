@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Grid,
   CircularProgress,
@@ -19,6 +19,8 @@ import logo from "../../images/logo.svg";
 
 // context
 import { useUserDispatch, loginUser } from "../../context/UserContext";
+import toastTypes from "utils/toast";
+import firebase from '../../firebase/index';
 
 function Login(props) {
   console.log(1);
@@ -33,13 +35,27 @@ function Login(props) {
   const [error, setError] = useState(null);
   const [activeTabId] = useState(0);
   const [nameValue, setNameValue] = useState("");
-  const [loginValue, setLoginValue] = useState("tetemol604@jooffy.com");
-  const [passwordValue, setPasswordValue] = useState("12345678");
+  const [loginValue, setLoginValue] = useState("");
+  const [passwordValue, setPasswordValue] = useState("");
+
+  const forgotPassword = useCallback(() => {
+    if (!loginValue || loginValue === "") {
+      toastTypes.info('Email nao preenchido')
+      return
+    }
+
+    setIsLoading(true)
+    firebase.auth().sendPasswordResetEmail(loginValue)
+      .then(() => {
+        toastTypes.info(`Enviado email de recuperacao para ${loginValue}`)
+        setIsLoading(false)
+      })
+  }, [loginValue])
 
   return (
     <Grid container className={classes.container}>
       <div className={classes.logotypeContainer}>
-        <img alt="logo" src={logo} style={{width: '50%'}} />
+        <img alt="logo" src={logo} style={{ width: '50%' }} />
       </div>
       <div className={classes.formContainer}>
         <div className={classes.form}>
@@ -109,6 +125,7 @@ function Login(props) {
                   color="primary"
                   size="large"
                   className={classes.forgetButton}
+                  onClick={forgotPassword}
                 >
                   Esqueci a senha
                 </Button>
