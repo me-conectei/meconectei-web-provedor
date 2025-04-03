@@ -1,13 +1,12 @@
 import firebase from 'firebase'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDv8rnqdReNWnQowmXS1KPaYy573fbvrs8",
-  authDomain: "ieaqui.firebaseapp.com",
-  projectId: "ieaqui",
-  storageBucket: "ieaqui.appspot.com",
-  messagingSenderId: "114811016110",
-  appId: "1:114811016110:web:f15ffd61db6ca8ac4aee3f",
-  measurementId: "G-73R610QYLT"
+  apiKey: "AIzaSyCTjiBVGiO5a8nZL9RO_rwvLK67FJvRqMQ",
+  authDomain: "me-conectei.firebaseapp.com",
+  projectId: "me-conectei",
+  storageBucket: "me-conectei.firebasestorage.app",
+  messagingSenderId: "591522733581",
+  appId: "1:591522733581:web:d4f271f22441a6327a7f44"
 };
 
 firebase.initializeApp(firebaseConfig)
