@@ -7,6 +7,8 @@ import {
 } from "@react-google-maps/api";
 import axios from "axios";
 import { baseURL } from "api";
+import { GOOGLE_MAPS_API_KEY } from "utils/constans";
+import { toast } from "react-toastify";
 
 export const BasicMap = ({
   city,
@@ -19,7 +21,7 @@ export const BasicMap = ({
   const [changeIndex, setChangeIndex] = useState(-1);
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyC_o7A8i-8xhsvYvJz9UEk9TagSRZEsvNE",
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   });
 
   const options = {
@@ -42,6 +44,8 @@ export const BasicMap = ({
   const url = `${baseURL}/proxy?query=${cityValue}`;
 
   useEffect(() => {
+    if (!city) return
+
     axios
       .get(url)
       .then((res) => {
@@ -51,12 +55,11 @@ export const BasicMap = ({
         });
       })
       .catch((err) => {
-        console.log(err);
+        toast.error("Erro ao buscar a cidade");
       });
   }, [city, url]);
 
   console.log("Posição atual", position);
-  //console.log("Coords", coords);
 
   return isLoaded ? (
     <GoogleMap

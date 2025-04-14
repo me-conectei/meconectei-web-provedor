@@ -47,8 +47,6 @@ function useUserDispatch() {
 }
 
 export { UserProvider, useUserState, useUserDispatch, loginUser, signOut };
-// ###########################################################
-
 
 function loginUser(dispatch, login, password, history, setIsLoading, setError) {
   setError(false);
@@ -59,35 +57,33 @@ function loginUser(dispatch, login, password, history, setIsLoading, setError) {
       .auth()
       .signInWithEmailAndPassword(login, password)
       .then((user) => {
-        console.log("Logado com sucesso!");
         localStorage.setItem('id_token', user.user.uid)
         setError(null)
-        setIsLoading(false)
         createCommandService({
           url: "/registerSession",
           method: APIMethods.POST,
           payload: {
-              uidUser: user.user.uid,
+            uidUser: user.user.uid,
           },
           onCustomError: e => {
-              debugger;
+            setIsLoading(false);
+            debugger;
           },
           onSuccess: ({ data }) => {
-              if (data?.success) {
-                  localStorage.setItem('sessionToken', data.JWT);
-                  console.log('o que temos',data)
-                  dispatch({type: 'LOGIN_SUCCESS'})
-                  history.push('/app/indicadores')
-              } else {
-                  console.error(data.errorMessage);
-              }                
+            if (data?.success) {
+              localStorage.setItem('sessionToken', data.JWT);
+              dispatch({ type: 'LOGIN_SUCCESS' })
+              history.push('/app/indicadores')
+            } else {
+              console.error(data.errorMessage);
+            }
+            setIsLoading(false);
           }
-      });        
-    })
+        });
+      })
       .catch((err) => {
         setError(true);
         setIsLoading(false);
-        console.log("Aqui está o erro", err);
       });
   } else {
     dispatch({ type: "LOGIN_FAILURE" });

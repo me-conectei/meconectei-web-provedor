@@ -29,6 +29,7 @@ import {
 import DateFnsUtils from "@date-io/date-fns";
 import masks from '.././../../utils/masks'
 import { baseURL } from "api";
+import { formatAxiosErrorMessage } from "utils/apiErrorHandler";
 const styled = {
   //position: "absolute",
 
@@ -226,8 +227,6 @@ export default function AddPlans({
 
   }
 
-
-
   const addNewPlan = () => {
     createCommandService({
       url: `${baseURL}/plans/add`,
@@ -254,9 +253,7 @@ export default function AddPlans({
         window.location.reload();
       },
       onCustomError: e => {
-        toast.error("Por favor preencha todos os campos")
-        console.log('Esse é o erro', e)
-        debugger;
+        formatAxiosErrorMessage(e).forEach((textError) => toast.error(textError));
       }
     })
   }
