@@ -27,6 +27,7 @@ import { createCommandService, APIMethods } from "services";
 import axios from "axios";
 import { BasicMap } from "./Maps";
 import { useJsApiLoader } from "@react-google-maps/api";
+import { GOOGLE_MAPS_API_KEY } from "utils/constans";
 
 const useStyles = makeStyles((theme) => ({
   divider: theme.divider,
@@ -104,7 +105,7 @@ export default function Maps() {
   // eslint-disable-next-line
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyC_o7A8i-8xhsvYvJz9UEk9TagSRZEsvNE",
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   });
 
   const asyncFetch = () => {

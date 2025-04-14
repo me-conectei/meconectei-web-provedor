@@ -4,22 +4,22 @@ import { MuiPickersUtilsProvider, KeyboardDatePicker } from "@material-ui/picker
 import DateFnsUtils from "@date-io/date-fns";
 
 import {
-  Button,
-  Typography,
   Box,
   Card,
   CardContent,
   CardHeader,
   Grid,
-  FormControl,
   TextField,
-  Select,
+  Button,
   MenuItem,
-  Divider,
-  TextareaAutosize,
-  FormGroup,
+  FormControl,
   FormControlLabel,
   Checkbox,
+  Select,
+  Typography,
+  Divider,
+  FormGroup,
+  TextareaAutosize,
 } from "@material-ui/core";
 
 import toast from "utils/toast";
@@ -152,6 +152,7 @@ export default function PlansData() {
       },
       onCustomError: (e) => {
         debugger;
+        console.log("Esse é o erro", e);
       },
     });
   };
@@ -183,8 +184,7 @@ export default function PlansData() {
         Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       onSuccess: ({ data }) => {
-    
-        console.log(data.regions);
+
         const check = [];
         for (let index in regions) {
           const idRegion = regions[index].idRegion;
@@ -278,21 +278,13 @@ export default function PlansData() {
       onSuccess: ({ data }) => {
         changeArea();
         toast.success("Plano atualizado com sucesso!");
-        console.log("Sucesso!!!");
         history.goBack();
       },
       onCustomError: (e) => {
-        debugger;
-        toast.error("Por favor preencha todos os campos")
-        console.log("Esse é o erro", e);
+        toast.error("Erro ao atualizar plano!");
       },
     });
   };
-
-  
-
-  console.log("price", price);
-  //console.log(typeof price);
 
 
   return (
@@ -320,14 +312,19 @@ export default function PlansData() {
       <Grid container spacing={2}>
         <Grid item lg={8} md={12} sm={12} xs={12}>
           <Card className={styles.card}>
+            <CardHeader />
             <CardContent>
-              <Box className={styles.sectionLabel}>Plano</Box>
+              <Box mb={2}>
+                <Typography variant="h5" color="textSecondary">
+                  Campos marcados com * são obrigatórios
+                </Typography>
+              </Box>
               <Grid container spacing={2}>
                 <Grid item container spacing={2}>
                   <Grid style={{ boder: "1px solid black", width: "100%" }}>
                     <FormControl className={styles.formControl} fullWidth>
                       <TextField
-                        label="Nome do Plano"
+                        label="Nome do Plano *"
                         variant="outlined"
                         size="small"
                         value={planName}
@@ -347,10 +344,10 @@ export default function PlansData() {
                       <TextField
                         value={technology}
                         select
-                        label="Tecnologia"
+                        label="Tecnologia *"
                         onChange={(e) => setTechnology(e.target.value)}
                         defaultValue={planData?.technology}
-                        /*</CardContent>onChange={fulfillData.bind(null, "status")} */ fullWidth
+                        fullWidth
                       >
                         <MenuItem value={"Fibra"}>Fibra</MenuItem>
                         <MenuItem value={"Cabeamento"}>Cabeamento</MenuItem>
@@ -363,7 +360,7 @@ export default function PlansData() {
                     <FormControl className={styles.formControl} fullWidth>
                       <TextField
                         select
-                        label="Wifi"
+                        label="Wifi *"
                         value={wifi}
                         defaultValue={planData?.wifi}
                         onChange={(event) => setWifi(event.target.value)}
@@ -390,7 +387,7 @@ export default function PlansData() {
                     <FormControl className={styles.formControl} fullWidth>
                       <TextField
                         select
-                        label="Câmera de monitoramento"
+                        label="Câmera de monitoramento *"
                         value={camera}
                         defaultValue={planData?.camera}
                         onChange={(event) => setCamera(event.target.value)}
@@ -410,7 +407,7 @@ export default function PlansData() {
                     <FormControl className={styles.formControl} fullWidth>
                       <TextField
                         select
-                        label="Telefone"
+                        label="Telefone *"
                         value={phone}
                         defaultValue={planData?.phone}
                         onChange={(event) => setPhone(event.target.value)}
@@ -437,9 +434,9 @@ export default function PlansData() {
                     <FormControlLabel
                       className={styles.formControl}
                       fullWidth
-                      label="Sem fidelidade"
+                      label="Sem fidelidade *"
                       control={
-                        <Checkbox 
+                        <Checkbox
                           checked={fidelityFree}
                           onChange={(event) => {
                             setFidelity('')
@@ -453,9 +450,9 @@ export default function PlansData() {
                     <FormControlLabel
                       className={styles.formControl}
                       fullWidth
-                      label="Instalação gratuita"
+                      label="Instalação gratuita *"
                       control={
-                        <Checkbox 
+                        <Checkbox
                           checked={noInstall}
                           onChange={(event) => {
                             setNoInstall(event.target.checked)
@@ -476,7 +473,7 @@ export default function PlansData() {
                     <FormControl className={styles.formControl} fullWidth>
                       <TextField
                         disabled={fidelityFree}
-                        label="Fidelidade (em meses)"
+                        label="Fidelidade (em meses) *"
                         variant="outlined"
                         size="small"
                         value={formatFidelity(fidelity)}
@@ -488,7 +485,7 @@ export default function PlansData() {
                     <FormControl className={styles.formControl} fullWidth>
                       <TextField
                         disabled={noInstall}
-                        label="Instalação R$"
+                        label="Instalação R$ *"
                         variant="outlined"
                         size="small"
                         value={priceInstallation}
@@ -509,7 +506,6 @@ export default function PlansData() {
                         label="Valor"
                         variant="outlined"
                         size="small"
-                        //defaultValue={currencyMoney(planData?.price)}
                         value={price}
                         onChange={(e) => setPrice(masks.money(e.target.value))}
                       />
@@ -543,7 +539,7 @@ export default function PlansData() {
                 <Grid item style={{ width: "45%" }}>
                   <FormControl className={styles.formControl} fullWidth>
                     <TextField
-                      label="Velocidade (em MB)"
+                      label="Velocidade (em MB) *"
                       variant="outlined"
                       defaultValue={planData?.velocity}
                       value={velocity}

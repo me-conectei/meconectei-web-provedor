@@ -7,6 +7,7 @@ import {
 } from "@react-google-maps/api";
 import axios from "axios";
 import { baseURL } from "api";
+import { GOOGLE_MAPS_API_KEY } from "utils/constans";
 
 const BasicMap = ({ city, coords, setCoords, position, setPosition }) => {
   // eslint-disable-next-line
@@ -17,7 +18,7 @@ const BasicMap = ({ city, coords, setCoords, position, setPosition }) => {
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyC_o7A8i-8xhsvYvJz9UEk9TagSRZEsvNE",
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
   });
 
   const onLoad = (polyline) => {
