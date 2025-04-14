@@ -26,7 +26,6 @@ import toast from "utils/toast";
 import { createCommandService, APIMethods } from "services";
 import axios from "axios";
 import { BasicMap } from "./Maps";
-import { useJsApiLoader } from "@react-google-maps/api";
 import useApiKeys from "hooks/useApiKeys";
 
 const useStyles = makeStyles((theme) => ({
