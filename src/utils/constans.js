@@ -1,3 +1,1 @@
 export const DEBOUNCE_TIME = 400;
-
-export const GOOGLE_MAPS_API_KEY = "AIzaSyBMGnF2Yvou2x0H9BHEmXCZi4YrQGEICsM"

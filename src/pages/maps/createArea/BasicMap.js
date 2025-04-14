@@ -7,20 +7,18 @@ import {
 } from "@react-google-maps/api";
 import axios from "axios";
 import { baseURL } from "api";
-import { GOOGLE_MAPS_API_KEY } from "utils/constans";
 
-const BasicMap = ({ city, coords, setCoords, position, setPosition }) => {
+const BasicMap = ({ city, coords, setCoords, position, setPosition, mapsKey }) => {
   // eslint-disable-next-line
   const [_nonused, setCenter] = useState({
     lat: -26.3825645832962,
     lng: -48.829166464261704,
   });
-
+  // eslint-disable-next-line
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: mapsKey,
   });
-
   const onLoad = (polyline) => {
     console.log("polyline: ", polyline);
   };
@@ -79,12 +77,12 @@ const BasicMap = ({ city, coords, setCoords, position, setPosition }) => {
         options={options}
         onClick={(e) => {
           console.log(e.latLng)
-          
+
         }}
       />
     </GoogleMap>
   ) : (
-    <></>
+    <h1>Carregando Google Maps</h1>
   );
 };
 

@@ -7,7 +7,6 @@ import {
 } from "@react-google-maps/api";
 import axios from "axios";
 import { baseURL } from "api";
-import { GOOGLE_MAPS_API_KEY } from "utils/constans";
 import { toast } from "react-toastify";
 
 export const BasicMap = ({
@@ -15,13 +14,15 @@ export const BasicMap = ({
   newCoords,
   setNewCoords,
   position,
-  polygonRef
+  polygonRef,
+  mapsKey
 }) => {
   const [center, setCenter] = useState(newCoords.length > 0 ? newCoords[0] : { lat: 0, lng: 0 });
   const [changeIndex, setChangeIndex] = useState(-1);
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: mapsKey,
   });
 
   const options = {
@@ -107,6 +108,6 @@ export const BasicMap = ({
       }
     </GoogleMap>
   ) : (
-    <></>
+    <h1>Carregando Google Maps</h1>
   );
 };

@@ -11,9 +11,7 @@ import {
   TextField,
   Select,
   MenuItem,
-
   InputLabel,
-
 } from "@material-ui/core";
 
 
@@ -29,7 +27,7 @@ import { useSessionContext } from "context/UserSessionContext";
 import toast from "utils/toast";
 import { createCommandService, APIMethods } from "services";
 import axios from "axios";
-
+import useApiKeys from "hooks/useApiKeys";
 
 const useStyles = makeStyles((theme) => ({
   divider: theme.divider,
@@ -86,6 +84,8 @@ const useStyles = makeStyles((theme) => ({
 export default function CreateArea() {
   const { isLoading, startLoading, finishLoading } = useSessionContext();
 
+  const { keys } = useApiKeys()
+  const [mapLoaded, setLoadedMaps] = useState(false);
   const [uf, setUf] = useState([]);
   const [state, setState] = useState("");
   const [city, setCity] = useState([]);
@@ -97,7 +97,6 @@ export default function CreateArea() {
     lat: 0,
     lng: 0,
   });
-
 
   const getUfs = () => {
     startLoading();
@@ -196,13 +195,10 @@ export default function CreateArea() {
     }
   };
 
-
   useEffect(() => {
     getUfs();
     getLocation();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-
 
   useEffect(() => {
     getCity();
@@ -213,6 +209,12 @@ export default function CreateArea() {
 
   const history = useHistory();
 
+  useEffect(() => {
+    if (!keys || !keys.googleMapsKey) return
+
+    setLoadedMaps(true)
+  }, [keys])
+
   const goBack = () => {
     history.goBack();
   };
@@ -220,9 +222,6 @@ export default function CreateArea() {
   if (isLoading) {
     return null;
   }
-
-
-
 
   return (
     <>
@@ -327,21 +326,24 @@ export default function CreateArea() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid container spacing={2}>
-          <Grid item lg={12} md={10} sm={12} xs={12}>
-            <Card className={styles.cardMap}>
-              <div className={styles.mapContainer}>
-                <BasicMap
-                  city={cityValue}
-                  coords={coords}
-                  setCoords={setCoords}
-                  position={position}
-                  setPosition={setPosition}
-                />
-              </div>
-            </Card>
+        {mapLoaded && (
+          <Grid container spacing={2}>
+            <Grid item lg={12} md={10} sm={12} xs={12}>
+              <Card className={styles.cardMap}>
+                <div className={styles.mapContainer}>
+                  <BasicMap
+                    city={cityValue}
+                    coords={coords}
+                    setCoords={setCoords}
+                    position={position}
+                    setPosition={setPosition}
+                    mapsKey={keys.googleMapsKey}
+                  />
+                </div>
+              </Card>
+            </Grid>
           </Grid>
-        </Grid>
+        )}
       </Grid>
     </>
   );

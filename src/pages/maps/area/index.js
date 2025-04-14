@@ -27,7 +27,7 @@ import { createCommandService, APIMethods } from "services";
 import axios from "axios";
 import { BasicMap } from "./Maps";
 import { useJsApiLoader } from "@react-google-maps/api";
-import { GOOGLE_MAPS_API_KEY } from "utils/constans";
+import useApiKeys from "hooks/useApiKeys";
 
 const useStyles = makeStyles((theme) => ({
   divider: theme.divider,
@@ -84,6 +84,7 @@ const useStyles = makeStyles((theme) => ({
 export default function Maps() {
   const { isLoading, startLoading, finishLoading } = useSessionContext();
 
+  const [isLoadedMaps, setLoadedMaps] = useState(false)
   const [uf, setUf] = useState([]);
   const [state, setState] = useState("");
   const [city, setCity] = useState([]);
@@ -93,6 +94,7 @@ export default function Maps() {
   const [newCoords, setNewCoords] = useState([]);
   const { id } = useParams();
   const polygonRef = useRef(null);
+  const { keys } = useApiKeys()
 
   const styles = useStyles();
 
@@ -101,12 +103,6 @@ export default function Maps() {
   const goBack = () => {
     history.goBack();
   };
-
-  // eslint-disable-next-line
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-  });
 
   const asyncFetch = () => {
     startLoading();
@@ -129,6 +125,7 @@ export default function Maps() {
       },
     });
   };
+
   const getCoords = () => {
     startLoading();
     createCommandService({
@@ -138,7 +135,7 @@ export default function Maps() {
         Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       onSuccess: ({ data }) => {
-        if(data.data && data.data.length > 0) {
+        if (data.data && data.data.length > 0) {
           setNewCoords(data.data.map((item) => ({ lat: item.coordinate.x, lng: item.coordinate.y })));
         }
         finishLoading();
@@ -183,13 +180,19 @@ export default function Maps() {
     asyncFetch();
     getUfs();
     getCoords();
-   
+
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     getCity();
     // eslint-disable-next-line
   }, [state]);
+
+  useEffect(() => {
+    if (!keys || !keys.googleMapsKey) return
+    
+    setLoadedMaps(true)
+  }, [keys])
 
   const updateCoords = () => {
     const body = {
@@ -214,11 +217,7 @@ export default function Maps() {
   };
 
   const onSave = () => {
-    /*f(polygonRef.current) {
-      console.log('path')
-      console.log(polygonRef.current.getPath());
-    }
-    return*/
+
     startLoading();
     const body = {
       name: region,
@@ -234,7 +233,7 @@ export default function Maps() {
         Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       onSuccess: ({ data }) => {
-        if(data.success) {
+        if (data.success) {
           updateCoords();
           toast.success("Registro atualizado com sucesso!");
           finishLoading();
@@ -276,7 +275,7 @@ export default function Maps() {
                 variant="contained"
                 onClick={onClear}
                 className={styles.buttonSave}
-                style={{backgroundColor: '#db6f82', marginRight: 20}}
+                style={{ backgroundColor: '#db6f82', marginRight: 20 }}
               >
                 Limpar
               </Button>
@@ -375,20 +374,23 @@ export default function Maps() {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid container spacing={2}>
-              <Grid item lg={12} md={10} sm={12} xs={12}>
-                <Card className={styles.cardMap}>
-                  <div className={styles.mapContainer}>
-                    <BasicMap
-                      city={cityValue}
-                      setNewCoords={setNewCoords}
-                      newCoords={newCoords}
-                      polygonRef={polygonRef}
-                    />
-                  </div>
-                </Card>
+            {isLoadedMaps && (
+              <Grid container spacing={2}>
+                <Grid item lg={12} md={10} sm={12} xs={12}>
+                  <Card className={styles.cardMap}>
+                    <div className={styles.mapContainer}>
+                      <BasicMap
+                        city={cityValue}
+                        setNewCoords={setNewCoords}
+                        newCoords={newCoords}
+                        polygonRef={polygonRef}
+                        mapsKey={keys.googleMapsKey}
+                      />
+                    </div>
+                  </Card>
+                </Grid>
               </Grid>
-            </Grid>
+            )}
           </Grid>
         </>
       )}
