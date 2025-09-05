@@ -28,6 +28,7 @@ import toast from "utils/toast";
 import { createCommandService, APIMethods } from "services";
 import axios from "axios";
 import useApiKeys from "hooks/useApiKeys";
+import KMLUploader from "components/KMLUploader";
 
 const useStyles = makeStyles((theme) => ({
   divider: theme.divider,
@@ -93,6 +94,7 @@ export default function CreateArea() {
   const [region, setRegion] = useState("");
   const [status, setStatus] = useState("");
   const [coords, setCoords] = useState([])
+  const [importedData, setImportedData] = useState([]);
   const [position, setPosition] = useState({
     lat: 0,
     lng: 0,
@@ -219,6 +221,19 @@ export default function CreateArea() {
     history.goBack();
   };
 
+  const handleDataParsed = (data) => {
+    setImportedData(data);
+    toast.success(`Arquivo processado com sucesso! ${data.length} arquivo(s) importado(s).`);
+  };
+
+  const handleImportError = (error) => {
+    toast.error(`Erro ao processar arquivo: ${error}`);
+  };
+
+  const clearImportedData = () => {
+    setImportedData([]);
+  };
+
   if (isLoading) {
     return null;
   }
@@ -230,6 +245,16 @@ export default function CreateArea() {
           <BackButton onClick={goBack} label="Configurar Área" simpleOnMobile />
         </Box>
         <Box display="flex" justifyContent="flex-end" flexGrow="1">
+          {importedData.length > 0 && (
+            <Button
+              variant="contained"
+              onClick={clearImportedData}
+              className={styles.buttonSave}
+              style={{ backgroundColor: '#ff9800', marginRight: 20 }}
+            >
+              Limpar Importados
+            </Button>
+          )}
           <Button
             variant="contained"
             onClick={createRegion}
@@ -239,6 +264,16 @@ export default function CreateArea() {
           </Button>
         </Box>
       </Box>
+      
+      <Grid container spacing={2}>
+        <Grid item lg={12} md={12} sm={12} xs={12}>
+          <KMLUploader
+            onDataParsed={handleDataParsed}
+            onError={handleImportError}
+          />
+        </Grid>
+      </Grid>
+      
       <Grid container spacing={2}>
         <Grid item lg={8} md={10} sm={12} xs={12}>
           <Card className={styles.card}>
@@ -338,6 +373,7 @@ export default function CreateArea() {
                     position={position}
                     setPosition={setPosition}
                     mapsKey={keys.googleMapsKey}
+                    importedData={importedData}
                   />
                 </div>
               </Card>
