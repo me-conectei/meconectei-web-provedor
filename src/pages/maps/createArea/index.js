@@ -14,21 +14,17 @@ import {
   InputLabel,
 } from "@material-ui/core";
 
-
 import BackButton from "components/BackButton";
-
-
 import { useHistory } from "react-router-dom";
-
 import { makeStyles } from "@material-ui/styles";
 import BasicMap from "./BasicMap";
 import { useSessionContext } from "context/UserSessionContext";
-
-import toast from "utils/toast";
-import { createCommandService, APIMethods } from "services";
-import axios from "axios";
 import useApiKeys from "hooks/useApiKeys";
 import KMLUploader from "components/KMLUploader";
+import toast from "utils/toast";
+
+import { useAreaForm } from "./hooks/useAreaForm";
+import { useLocationData } from "./hooks/useLocationData";
 
 const useStyles = makeStyles((theme) => ({
   divider: theme.divider,
@@ -37,7 +33,6 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 20,
     paddingLeft: 10,
     paddingRight: 10,
-
     height: 210,
   },
   cardMap: {
@@ -84,154 +79,71 @@ const useStyles = makeStyles((theme) => ({
 
 export default function CreateArea() {
   const { isLoading, startLoading, finishLoading } = useSessionContext();
-
-  const { keys } = useApiKeys()
-  const [mapLoaded, setLoadedMaps] = useState(false);
-  const [uf, setUf] = useState([]);
-  const [state, setState] = useState("");
-  const [city, setCity] = useState([]);
-  const [cityValue, setCityValue] = useState("");
-  const [region, setRegion] = useState("");
-  const [status, setStatus] = useState("");
-  const [coords, setCoords] = useState([])
-  const [importedData, setImportedData] = useState([]);
-  const [position, setPosition] = useState({
-    lat: 0,
-    lng: 0,
-  });
-
-  const getUfs = () => {
-    startLoading();
-    axios
-      .get("https://servicodados.ibge.gov.br/api/v1/localidades/estados")
-      .then((res) => {
-        setUf(res.data);
-        finishLoading();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const getCity = () => {
-    startLoading();
-    axios
-      .get(
-        `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/municipios`
-      )
-      .then((res) => {
-        setCity(res.data);
-        finishLoading();
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  };
-
-  const createCoords = (idRegion) => {
-    const body = {
-      coords: coords
-    }
-    startLoading();
-    createCommandService({
-      method: APIMethods.POST,
-      payload: body,
-      url: `/regions/coords/${idRegion}`,
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem("sessionToken")}`
-      },
-      onSuccess: ({ data }) => {
-        toast.success("Registro salvo com sucesso!");
-        finishLoading();
-        goBack();
-      },
-      onCustomError: (e) => {
-        // debugger;
-        console.log(e)
-      },
-    });
-  }
-
-  const createRegion = () => {
-    const body = {
-      name: region,
-      city: cityValue,
-      state: state,
-    }
-    startLoading();
-    createCommandService({
-      method: APIMethods.POST,
-      payload: body,
-      url: "/regions",
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem("sessionToken")}`
-      },
-      onSuccess: ({ data }) => {
-        if (data.success) {
-          createCoords(data.idRegion)
-        } else {
-          toast.error(data.errorMessage);
-          finishLoading();
-        }
-      },
-      onCustomError: (e) => {
-        // debugger;
-        console.log(e)
-      },
-    });
-  }
-
-  const getLocation = () => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          console.log(pos);
-          setPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        },
-        (error) => {
-          console.log(error.message);
-        }
-      );
-    } else {
-      alert("Ops, não foi possível pegar localização");
-    }
-  };
-
-  useEffect(() => {
-    getUfs();
-    getLocation();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    getCity();
-    // eslint-disable-next-line
-  }, [state]);
-
+  const { keys } = useApiKeys();
+  const history = useHistory();
   const styles = useStyles();
 
-  const history = useHistory();
+  // Hooks customizados
+  const {
+    region,
+    setRegion,
+    state,
+    setState,
+    cityValue,
+    setCityValue,
+    status,
+    setStatus,
+    coords,
+    setCoords,
+    importedData,
+    mapBounds,
+    isDetectingLocation,
+    handleDataParsed,
+    clearImportedData,
+    saveRegion
+  } = useAreaForm();
 
+  const {
+    uf,
+    city,
+    position,
+    setPosition,
+    loadCities
+  } = useLocationData();
+
+  const [mapLoaded, setLoadedMaps] = useState(false);
+
+  // Carrega cidades quando o estado muda
   useEffect(() => {
-    if (!keys || !keys.googleMapsKey) return
+    if (state) {
+      loadCities(state);
+    }
+  }, [state, loadCities]);
 
-    setLoadedMaps(true)
-  }, [keys])
+  // Carrega mapa quando as chaves estão disponíveis
+  useEffect(() => {
+    if (keys?.googleMapsKey) {
+      setLoadedMaps(true);
+    }
+  }, [keys]);
 
   const goBack = () => {
     history.goBack();
-  };
-
-  const handleDataParsed = (data) => {
-    setImportedData(data);
-    toast.success(`Arquivo processado com sucesso! ${data.length} arquivo(s) importado(s).`);
   };
 
   const handleImportError = (error) => {
     toast.error(`Erro ao processar arquivo: ${error}`);
   };
 
-  const clearImportedData = () => {
-    setImportedData([]);
+  const handleCreateRegion = async () => {
+    startLoading();
+    try {
+      await saveRegion();
+      finishLoading();
+      goBack();
+    } catch (error) {
+      finishLoading();
+    }
   };
 
   if (isLoading) {
@@ -257,7 +169,7 @@ export default function CreateArea() {
           )}
           <Button
             variant="contained"
-            onClick={createRegion}
+            onClick={handleCreateRegion}
             className={styles.buttonSave}
           >
             Salvar
@@ -287,7 +199,7 @@ export default function CreateArea() {
                         label="Nome"
                         variant="outlined"
                         size="small"
-                        defaultValue={region}
+                        value={region}
                         onChange={(e) => setRegion(e.target.value)}
                       />
                     </FormControl>
@@ -303,6 +215,7 @@ export default function CreateArea() {
                         label="Estado"
                         variant="outlined"
                         size="small"
+                        disabled={isDetectingLocation}
                       >
                         {uf.map((item) => {
                           return (
@@ -312,6 +225,11 @@ export default function CreateArea() {
                           );
                         })}
                       </Select>
+                      {isDetectingLocation && (
+                        <Typography variant="caption" color="primary" style={{ marginTop: 4 }}>
+                          🔍 Detectando localização...
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
                   <Grid item lg={6} xs={12}>
@@ -324,7 +242,7 @@ export default function CreateArea() {
                         onChange={(e) => setCityValue(e.target.value)}
                         label="Cidade"
                         variant="outlined"
-                      //fullWidth
+                        disabled={isDetectingLocation}
                       >
                         {city.map((item) => {
                           return (
@@ -334,6 +252,11 @@ export default function CreateArea() {
                           );
                         })}
                       </Select>
+                      {isDetectingLocation && (
+                        <Typography variant="caption" color="primary" style={{ marginTop: 4 }}>
+                          🔍 Detectando localização...
+                        </Typography>
+                      )}
                     </FormControl>
                   </Grid>
                 </Grid>
@@ -374,6 +297,7 @@ export default function CreateArea() {
                     setPosition={setPosition}
                     mapsKey={keys.googleMapsKey}
                     importedData={importedData}
+                    mapBounds={mapBounds}
                   />
                 </div>
               </Card>

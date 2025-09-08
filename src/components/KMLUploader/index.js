@@ -12,8 +12,7 @@ import {
 import { CloudUpload, Close, CheckCircle, ErrorOutline } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 import JSZip from 'jszip';
-import { toGeoJSON } from '@mapbox/togeojson';
-import { DOMParser } from 'xmldom';
+import toGeoJSON from '@mapbox/togeojson';
 
 const useStyles = makeStyles((theme) => ({
   dropzone: {
@@ -83,17 +82,103 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const KMLUploader = ({ onDataParsed, onError }) => {
+const KMLUploader = ({ onDataParsed, onError, onMapBounds }) => {
   const classes = useStyles();
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [error, setError] = useState(null);
 
+  const calculateBounds = useCallback((features) => {
+    if (!features || features.length === 0) {
+      return null;
+    }
+
+    let minLat = Infinity;
+    let maxLat = -Infinity;
+    let minLng = Infinity;
+    let maxLng = -Infinity;
+
+    features.forEach(feature => {
+      if (feature.geometry && feature.geometry.coordinates) {
+        const coordinates = feature.geometry.coordinates;
+        
+        if (feature.geometry.type === 'Point') {
+          const [lng, lat] = coordinates;
+          minLat = Math.min(minLat, lat);
+          maxLat = Math.max(maxLat, lat);
+          minLng = Math.min(minLng, lng);
+          maxLng = Math.max(maxLng, lng);
+        } else if (feature.geometry.type === 'LineString') {
+          coordinates.forEach(([lng, lat]) => {
+            minLat = Math.min(minLat, lat);
+            maxLat = Math.max(maxLat, lat);
+            minLng = Math.min(minLng, lng);
+            maxLng = Math.max(maxLng, lng);
+          });
+        } else if (feature.geometry.type === 'Polygon') {
+          coordinates[0].forEach(([lng, lat]) => {
+            minLat = Math.min(minLat, lat);
+            maxLat = Math.max(maxLat, lat);
+            minLng = Math.min(minLng, lng);
+            maxLng = Math.max(maxLng, lng);
+          });
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          coordinates.forEach(polygon => {
+            polygon[0].forEach(([lng, lat]) => {
+              minLat = Math.min(minLat, lat);
+              maxLat = Math.max(maxLat, lat);
+              minLng = Math.min(minLng, lng);
+              maxLng = Math.max(maxLng, lng);
+            });
+          });
+        }
+      }
+    });
+
+    if (minLat === Infinity) {
+      return null;
+    }
+
+    const padding = 0.01;
+    return {
+      north: maxLat + padding,
+      south: minLat - padding,
+      east: maxLng + padding,
+      west: minLng - padding,
+      center: {
+        lat: (minLat + maxLat) / 2,
+        lng: (minLng + maxLng) / 2
+      }
+    };
+  }, []);
+
   const processKMLContent = useCallback((content, filename) => {
     try {
+      if (!toGeoJSON) {
+        throw new Error('Biblioteca toGeoJSON não foi importada corretamente');
+      }
+      
+      if (typeof toGeoJSON.kml !== 'function') {
+        throw new Error('Método toGeoJSON.kml não está disponível');
+      }
+      
       const parser = new DOMParser();
       const kml = parser.parseFromString(content, 'text/xml');
+      
+      if (!kml || !kml.documentElement) {
+        throw new Error('Arquivo KML inválido ou malformado');
+      }
+      
+      const parseError = kml.getElementsByTagName('parsererror');
+      if (parseError.length > 0) {
+        throw new Error('Erro de parsing XML no arquivo KML');
+      }
+      
       const geoJson = toGeoJSON.kml(kml);
+      
+      if (!geoJson || !geoJson.features) {
+        throw new Error('Nenhum dado geográfico válido encontrado no arquivo KML');
+      }
       
       return {
         filename,
@@ -102,6 +187,7 @@ const KMLUploader = ({ onDataParsed, onError }) => {
         features: geoJson.features || [],
       };
     } catch (err) {
+      console.error('Erro detalhado no processamento KML:', err);
       throw new Error(`Erro ao processar arquivo KML: ${err.message}`);
     }
   }, []);
@@ -111,19 +197,32 @@ const KMLUploader = ({ onDataParsed, onError }) => {
       const zip = new JSZip();
       const zipContent = await zip.loadAsync(content);
       
+      if (!zipContent || !zipContent.files) {
+        throw new Error('Arquivo KMZ corrompido ou inválido');
+      }
+      
       let kmlContent = null;
       let kmlFilename = null;
       
       for (const [filename, file] of Object.entries(zipContent.files)) {
-        if (filename.toLowerCase().endsWith('.kml')) {
-          kmlContent = await file.async('text');
-          kmlFilename = filename;
-          break;
+        if (filename.toLowerCase().endsWith('.kml') && !file.dir) {
+          try {
+            kmlContent = await file.async('text');
+            kmlFilename = filename;
+            break;
+          } catch (fileErr) {
+            console.warn(`Erro ao ler arquivo ${filename} do KMZ:`, fileErr);
+            continue;
+          }
         }
       }
       
       if (!kmlContent) {
-        throw new Error('Nenhum arquivo KML encontrado no arquivo KMZ');
+        throw new Error('Nenhum arquivo KML válido encontrado no arquivo KMZ');
+      }
+      
+      if (kmlContent.trim().length === 0) {
+        throw new Error('Arquivo KML encontrado no KMZ está vazio');
       }
       
       return processKMLContent(kmlContent, kmlFilename);
@@ -140,11 +239,18 @@ const KMLUploader = ({ onDataParsed, onError }) => {
       const processedFiles = [];
       
       for (const file of acceptedFiles) {
+        if (file.size === 0) {
+          throw new Error(`Arquivo ${file.name} está vazio`);
+        }
+        
         const content = await file.arrayBuffer();
         let result;
         
         if (file.name.toLowerCase().endsWith('.kml')) {
           const textContent = new TextDecoder().decode(content);
+          if (textContent.trim().length === 0) {
+            throw new Error(`Arquivo KML ${file.name} está vazio`);
+          }
           result = processKMLContent(textContent, file.name);
         } else if (file.name.toLowerCase().endsWith('.kmz')) {
           result = await processKMZContent(content, file.name);
@@ -164,6 +270,15 @@ const KMLUploader = ({ onDataParsed, onError }) => {
       if (onDataParsed) {
         onDataParsed(processedFiles);
       }
+
+      if (onMapBounds && processedFiles.length > 0) {
+        const allFeatures = processedFiles.flatMap(file => file.features);
+        const bounds = calculateBounds(allFeatures);
+        
+        if (bounds) {
+          onMapBounds(bounds);
+        }
+      }
       
     } catch (err) {
       const errorMessage = err.message || 'Erro ao processar arquivo';
@@ -174,7 +289,7 @@ const KMLUploader = ({ onDataParsed, onError }) => {
     } finally {
       setIsProcessing(false);
     }
-  }, [processKMLContent, processKMZContent, onDataParsed, onError]);
+  }, [processKMLContent, processKMZContent, onDataParsed, onError, onMapBounds, calculateBounds]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -304,6 +419,11 @@ const KMLUploader = ({ onDataParsed, onError }) => {
               <Box display="flex" alignItems="center">
                 <CheckCircle style={{ marginRight: 8 }} />
                 Arquivos processados com sucesso! Os dados estão prontos para visualização no mapa.
+              </Box>
+              <Box display="flex" alignItems="center" style={{ marginTop: 8 }}>
+                <Typography variant="body2" style={{ fontSize: '0.875rem' }}>
+                  🗺️ O mapa será movido automaticamente para a região dos dados importados.
+                </Typography>
               </Box>
             </Box>
           </Box>

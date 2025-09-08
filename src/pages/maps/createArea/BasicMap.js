@@ -9,12 +9,13 @@ import {
 import axios from "axios";
 import { baseURL } from "api";
 
-const BasicMap = ({ city, coords, setCoords, position, setPosition, mapsKey, importedData = [] }) => {
+const BasicMap = ({ city, coords, setCoords, position, setPosition, mapsKey, importedData = [], mapBounds }) => {
   // eslint-disable-next-line
   const [_nonused, setCenter] = useState({
     lat: -26.3825645832962,
     lng: -48.829166464261704,
   });
+  const [map, setMap] = useState(null);
   // eslint-disable-next-line
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -65,6 +66,21 @@ const BasicMap = ({ city, coords, setCoords, position, setPosition, mapsKey, imp
         console.log('Erro ao buscar localização da cidade:', err);
       });
   }, [city, url, setPosition]);
+
+  useEffect(() => {
+    if (map && mapBounds) {
+      const bounds = new window.google.maps.LatLngBounds(
+        new window.google.maps.LatLng(mapBounds.south, mapBounds.west),
+        new window.google.maps.LatLng(mapBounds.north, mapBounds.east)
+      );
+      
+      map.fitBounds(bounds);
+      
+      const listener = window.google.maps.event.addListener(map, 'bounds_changed', () => {
+        window.google.maps.event.removeListener(listener);
+      });
+    }
+  }, [map, mapBounds]);
 
   const renderImportedFeatures = () => {
     if (!importedData || importedData.length === 0) return null;
@@ -164,6 +180,7 @@ const BasicMap = ({ city, coords, setCoords, position, setPosition, mapsKey, imp
       mapContainerStyle={{ width: "100%", height: "100%" }}
       center={position}
       zoom={13}
+      onLoad={(map) => setMap(map)}
       onClick={(e) => {
         const clickPosition = e.latLng;
         setCoords([
