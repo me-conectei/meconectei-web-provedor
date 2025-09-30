@@ -123,8 +123,12 @@ export default function PlansData() {
   const [noInstall, setNoInstall] = useState(false)
 
   const handleChangeArea = (event, index) => {
-    checked[index] = event.target.checked;
-    setChecked([...checked]);
+    const newChecked = [...checked];
+    while (newChecked.length <= index) {
+      newChecked.push(false);
+    }
+    newChecked[index] = event.target.checked;
+    setChecked(newChecked);
   };
 
   const FetchPlanData = () => {
@@ -167,7 +171,7 @@ export default function PlansData() {
       },
       onSuccess: ({ data }) => {
         setRegions(data.data);
-        console.log("Regions", data.data);
+        finishLoading();
         getArea(data.data);
       },
       onCustomError: (e) => {
@@ -175,6 +179,7 @@ export default function PlansData() {
       },
     });
   };
+
   const getArea = (regions) => {
     startLoading();
     createCommandService({
@@ -184,7 +189,6 @@ export default function PlansData() {
         Authorization: `Bearer ${localStorage.getItem("sessionToken")}`,
       },
       onSuccess: ({ data }) => {
-
         const check = [];
         for (let index in regions) {
           const idRegion = regions[index].idRegion;
@@ -192,12 +196,12 @@ export default function PlansData() {
           check.push(Boolean(verify));
         }
         setChecked([...check]);
-        console.log("CHecked", check);
+        console.log("Checked", check);
         finishLoading();
       },
       onCustomError: (e) => {
         console.log(e);
-        debugger;
+        finishLoading();
       },
     });
   };
@@ -247,9 +251,7 @@ export default function PlansData() {
       method: APIMethods.POST,
       payload: { regions: newArray },
       url: `plans/regions/${idPlans}`,
-      onSuccess: ({ data }) => {
-        console.log("Sucesso!");
-      },
+      onSuccess: () => {},
       onCustomError: (e) => {
         debugger;
         console.log("Esse é o erro", e);
@@ -520,7 +522,7 @@ export default function PlansData() {
                           variant="inline"
                           size="small"
                           inputVariant="outlined"
-                          clearable
+                          clearable="true"
                           animateYearScrolling
                           lang="pt-BR"
                           format="dd/MM/yyyy"
@@ -597,7 +599,7 @@ export default function PlansData() {
                       key={item.idRegion}
                       control={
                         <Checkbox
-                          checked={checked[index]}
+                          checked={Boolean(checked[index])}
                           color="primary"
                           value={item.idRegion}
                           onChange={(event) => {

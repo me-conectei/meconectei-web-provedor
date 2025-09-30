@@ -81,9 +81,10 @@ const customizedLabelHorizontal = props => {
 
 const CustomizedLabelB = props => {
     const styles = useStyles();
+    const { tickFormatter, ...filteredProps } = props;
 
     return (
-        <foreignObject {...props} x={props.x - 40} y={props.y - 15}>
+        <foreignObject {...filteredProps} x={props.x - 40} y={props.y - 15}>
             <Box className={styles.barchartStars}>
                 <Typography variant="h5" className={styles.barchartStarsLabel}>
                     {props.graphData[props.index].stars}

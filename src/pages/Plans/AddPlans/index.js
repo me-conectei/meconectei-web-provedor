@@ -211,7 +211,6 @@ export default function AddPlans({
         newArray.push(regions[index].idRegion)
       }
     }
-    console.log("Array", newArray)
     createCommandService({
       method: APIMethods.POST,
       payload: {regions: newArray},
@@ -224,7 +223,6 @@ export default function AddPlans({
         console.log('Esse é o erro', e)
       }
     })
-
   }
 
   const addNewPlan = () => {
@@ -602,7 +600,7 @@ export default function AddPlans({
                                   variant="inline"
                                   size="small"
                                   inputVariant="outlined"
-                                  clearable
+                                  clearable="true"
                                   animateYearScrolling
                                   lang="pt-BR"
                                   format="dd/MM/yyyy"
