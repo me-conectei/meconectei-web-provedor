@@ -47,7 +47,6 @@ const columns = [
             filter: true,
             sort: true,
             customBodyRender:(value) =>{
-                console.log('data aqui', new Date(value).getFullYear())
                 const date = new Date(value)
                 return `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()}`
             }

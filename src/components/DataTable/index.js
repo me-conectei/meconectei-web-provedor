@@ -1,4 +1,5 @@
 import MUIDataTable from "mui-datatables";
+import React from "react";
 
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 
@@ -14,13 +15,25 @@ const customizedTheme = (tableProps) => createMuiTheme({
     },
 });
 
+const SafeMUIDataTable = React.forwardRef((props, ref) => {
+    const filteredProps = { ...props };
+    delete filteredProps.isEmpty;
+    delete filteredProps.tickFormatter;
+    
+    return <MUIDataTable ref={ref} {...filteredProps} />;
+});
+
+SafeMUIDataTable.displayName = 'SafeMUIDataTable';
+
 export default function DataTable(props) {
+    const { isEmpty, tickFormatter, ...filteredProps } = props;
+    
     return (
-        <MuiThemeProvider theme={customizedTheme(props)}>
-            <MUIDataTable
-                {...props}
+        <MuiThemeProvider theme={customizedTheme(filteredProps)}>
+            <SafeMUIDataTable
+                {...filteredProps}
                 options={{
-                    ...props.options,
+                    ...filteredProps.options,
                     selectableRows: "none",
                     textLabels: {
                         body: {
