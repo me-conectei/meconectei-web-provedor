@@ -190,17 +190,18 @@ const BasicMap = ({ city, coords, setCoords, position, setPosition, mapsKey, imp
         setCenter({ lat: clickPosition.lat(), lng: clickPosition.lng() });
       }}
     >
-      <Marker clickable={true} onClickableChanged={console.log("cliquei")} />
-      <Polygon
-        onLoad={onLoad}
-        path={coords}
-        options={options}
-        onClick={(e) => {
-          console.log(e.latLng)
-
-        }}
-      />
-      {renderImportedFeatures()}
+      {importedData && importedData.length > 0 ? (
+        renderImportedFeatures()
+      ) : (
+        <Polygon
+          onLoad={onLoad}
+          path={coords}
+          options={options}
+          onClick={(e) => {
+            console.log(e.latLng)
+          }}
+        />
+      )}
     </GoogleMap>
   ) : (
     <h1>Carregando Google Maps</h1>

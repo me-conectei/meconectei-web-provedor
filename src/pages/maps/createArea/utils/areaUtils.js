@@ -259,22 +259,68 @@ export const getFieldDisplayName = (field) => {
 };
 
 /**
+ * Extrai coordenadas dos dados importados para o formato usado pela API
+ * @param {Array} importedData - Dados importados dos arquivos KML/KMZ
+ * @returns {Array} - Array de coordenadas no formato { lat: number, lng: number }
+ */
+export const extractCoordinatesFromImportedData = (importedData) => {
+  if (!importedData || importedData.length === 0) {
+    return [];
+  }
+
+  const allFeatures = importedData.flatMap(file => file.features);
+  if (allFeatures.length === 0) {
+    return [];
+  }
+
+  const coordinates = [];
+
+  allFeatures.forEach(feature => {
+    if (feature.geometry && feature.geometry.coordinates) {
+      const coords = feature.geometry.coordinates;
+      
+      if (feature.geometry.type === 'Point') {
+        // const [lng, lat] = coords;
+        //coordinates.push({ lat, lng });
+      } else if (feature.geometry.type === 'LineString') {
+        coords.forEach(([lng, lat]) => {
+          coordinates.push({ lat, lng });
+        });
+      } else if (feature.geometry.type === 'Polygon') {
+        coords[0].forEach(([lng, lat]) => {
+          coordinates.push({ lat, lng });
+        });
+      } else if (feature.geometry.type === 'MultiPolygon') {
+        coords.forEach(polygon => {
+          polygon[0].forEach(([lng, lat]) => {
+            coordinates.push({ lat, lng });
+          });
+        });
+      }
+    }
+  });
+
+  return coordinates;
+};
+
+/**
  * Processa dados importados e extrai informações de localização
  * @param {Array} importedData - Dados importados dos arquivos KML/KMZ
  * @returns {Promise<Object>} - Objeto com informações de localização extraídas
  */
 export const processImportedData = async (importedData) => {
   if (!importedData || importedData.length === 0) {
-    return { city: '', state: '', bounds: null };
+    return { city: '', state: '', bounds: null, coordinates: [] };
   }
 
   const allFeatures = importedData.flatMap(file => file.features);
   if (allFeatures.length === 0) {
-    return { city: '', state: '', bounds: null };
+    return { city: '', state: '', bounds: null, coordinates: [] };
   }
 
   const bounds = calculateBounds(allFeatures);
   const centerCoords = calculateCenterOfFeatures(allFeatures);
+  const coordinates = extractCoordinatesFromImportedData(importedData);
   
   let city = '';
   let state = '';
@@ -289,7 +335,7 @@ export const processImportedData = async (importedData) => {
     }
   }
 
-  return { city, state, bounds };
+  return { city, state, bounds, coordinates };
 };
 
 // Função de teste para debug (pode ser chamada no console)
