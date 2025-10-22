@@ -31,10 +31,15 @@ export const useAreaForm = () => {
     if (data.length > 0) {
       setIsDetectingLocation(true);
       try {
-        const { city, state: detectedState, bounds } = await processImportedData(data);
+        const { city, state: detectedState, bounds, coordinates } = await processImportedData(data);
         
         if (bounds) {
           setMapBounds(bounds);
+        }
+        
+        if (coordinates && coordinates.length > 0) {
+          setCoords(coordinates);
+          toast.success(`📍 ${coordinates.length} coordenadas extraídas dos dados importados`);
         }
         
         if (city || detectedState) {
@@ -65,6 +70,7 @@ export const useAreaForm = () => {
   const clearImportedData = useCallback(() => {
     setImportedData([]);
     setMapBounds(null);
+    setCoords([]);
     setCityValue('');
     setState('');
     setRegion('');
