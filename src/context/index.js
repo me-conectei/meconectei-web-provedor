@@ -4,6 +4,7 @@ import UserContext from "pages/Users/context";
 import CompanieContext from "pages/Requests/context";
 import EvaluationContext from "pages/Evaluations/context";
 import SupportContext from "pages/Support/context";
+import PessoasInteressadasContext from "pages/PessoasInteressadas/context";
 
 export const StoreProvider = ({ children }) => {
     return (
@@ -13,7 +14,9 @@ export const StoreProvider = ({ children }) => {
                     <CompanieContext>
                         <EvaluationContext>
                             <SupportContext>
-                                {children}
+                                <PessoasInteressadasContext>
+                                    {children}
+                                </PessoasInteressadasContext>
                             </SupportContext>
                         </EvaluationContext>
                     </CompanieContext>
