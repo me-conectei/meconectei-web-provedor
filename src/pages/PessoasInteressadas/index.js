@@ -47,7 +47,7 @@ export default function PessoasInteressadas() {
     useEffect(() => {
         startLoading();
         fetchPlanosInteressados().finally(() => finishLoading());
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return null;
