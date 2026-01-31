@@ -5,6 +5,7 @@ export const APIMethods = {
     GET: "get",
     DELETE: "delete",
     PUT: "put",
+    PATCH: "patch",
 };
 
 export const createCommandService = ({

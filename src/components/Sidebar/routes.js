@@ -1,5 +1,6 @@
 import {
     PieChart as PieChartIcon,
+    PersonAdd as PersonAddIcon,
 } from "@material-ui/icons";
 
 import { ReactSVG } from "react-svg";
@@ -25,6 +26,12 @@ const routes = [
         label: "Solicitações",
         link: "/app/solicitacoes",
         icon: <ReactSVG src={Sent} />
+    },
+    {
+        id: "PESSOAS_INTERESSADAS",
+        label: "Pessoas interessadas",
+        link: "/app/pessoas-interessadas",
+        icon: <PersonAddIcon />
     },
     {
         id: "CLIENTES",

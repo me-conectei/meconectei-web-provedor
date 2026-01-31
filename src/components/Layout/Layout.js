@@ -31,6 +31,7 @@ import Maps from 'pages/maps/area/index'
 import AdSenseData from "pages/AdSenses/AdSenseData";
 import Account from "pages/Account";
 import CreateArea from "pages/maps/createArea";
+import PessoasInteressadas from "pages/PessoasInteressadas";
 
 
 function Layout(props) {
@@ -58,6 +59,7 @@ function Layout(props) {
               <Route path="/app/solicitacoes/:idOrder" component={RequestsData} />
               <Route path="/app/avaliacoes" component={Evaluations} />
               <Route path="/app/impulsionamentos" component={AdSenses} />
+              <Route path="/app/pessoas-interessadas" component={PessoasInteressadas} />
               <Route exact path="/app/usuarios" component={Users} />
               <Route path="/app/usuarios/:uidUser" component={UserData} />
               <Route path="/app/suporte" component={Support} />
